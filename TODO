@@ -1,0 +1,5 @@
+TODO
+- Abstract lexer error messages.
+- Cleanup lexer, reduce LoCs.
+- Tokenizer should not malloc() for each token, use arena alloc and reserve instead.
+- Add the same error-logic to hex and binary values in lex_number() in lex/lex.c
