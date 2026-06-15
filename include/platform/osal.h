@@ -19,5 +19,6 @@ struct file {
 struct file open_file(const char *path, int flags);
 
 void print(const char *fmt, ...);
+void exitc(int c);
 
 #endif

@@ -59,10 +59,10 @@ int main(int argc, char **argv)
 		if (token_storage.buffer[i] == NULL)
 			break;
 
-		printf("Tokenized '%.*s' with type: %d\n", //, on line: %d at position: %d\n", 
+		printf("Tokenized '%.*s' with type: %s\n", //, on line: %d at position: %d\n", 
 		       (int)((struct token*) token_storage.buffer[i])->length,
 		       ((struct token*)token_storage.buffer[i])->lexeme,
-		       (int)((struct token*)token_storage.buffer[i])->type
+		       lex_get_token_name((int)((struct token*)token_storage.buffer[i])->type)
 //				((struct token*)token_storage.buffer[i])->line,
 //				((struct token*)token_storage.buffer[i])->pos
 				);

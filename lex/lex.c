@@ -17,6 +17,41 @@ static struct token keywords[] = {
 	TOKEN(TOKEN_RETURN, "return")
 };
 
+#define __GET_TKN_NAME(TKN) case TKN: return #TKN
+
+const char *lex_get_token_name(int id)
+{
+	switch (id) {
+	__GET_TKN_NAME(TOKEN_INVALID);
+	__GET_TKN_NAME(TOKEN_EOP);
+	__GET_TKN_NAME(TOKEN_NUMBER);
+	__GET_TKN_NAME(TOKEN_HEX);
+	__GET_TKN_NAME(TOKEN_BINARY);
+	__GET_TKN_NAME(TOKEN_FUNCTION);
+	__GET_TKN_NAME(TOKEN_SEMICOLON);
+	__GET_TKN_NAME(TOKEN_NEWLINE);
+	__GET_TKN_NAME(TOKEN_G8);		
+	__GET_TKN_NAME(TOKEN_G16);		
+	__GET_TKN_NAME(TOKEN_G32);
+	__GET_TKN_NAME(TOKEN_G64);		
+	__GET_TKN_NAME(TOKEN_IDENTIFIER);	
+	__GET_TKN_NAME(TOKEN_PACK);
+	__GET_TKN_NAME(TOKEN_BRACES_OPEN);
+	__GET_TKN_NAME(TOKEN_BRACES_CLOSE);
+	__GET_TKN_NAME(TOKEN_PARAN_OPEN);
+	__GET_TKN_NAME(TOKEN_PARAN_CLOSE);
+	__GET_TKN_NAME(TOKEN_RETURN);
+	__GET_TKN_NAME(TOKEN_EQUALSIGN);
+	__GET_TKN_NAME(TOKEN_PLUS);
+	__GET_TKN_NAME(TOKEN_MINUS);
+	__GET_TKN_NAME(TOKEN_STAR);
+	__GET_TKN_NAME(TOKEN_SLASH);
+	default:
+		print("lex_get_token_name: token not found: %d!", id);
+		exitc(1);
+	}
+}
+
 inline int lex_is_digit(char c)
 {
 	return c >= '0' && c <= '9';
@@ -203,10 +238,23 @@ struct token lex_next(struct lex *l)
 	case '=':
 		l->pos++;
 		return TOKEN(TOKEN_EQUALSIGN, "=");
-	case 'a'...'z':
-	case 'A'...'Z':
-		return lex_keyword(l);	
+	case '*':
+		l->pos++;
+		return TOKEN(TOKEN_STAR, "*");
+	case '+':
+		l->pos++;
+		return TOKEN(TOKEN_PLUS, "+");
+	case '-':
+		l->pos++;
+		return TOKEN(TOKEN_MINUS, "-");
+	case '/':
+		l->pos++;
+		return TOKEN(TOKEN_SLASH, "/");
 	default:
+		char curr = lex_seek(l, 0);
+		if (lex_is_char(curr) || (curr == '_')) {
+			return lex_keyword(l);
+		}
 		return TOKEN(TOKEN_INVALID, "INVALID");
 	}
 }

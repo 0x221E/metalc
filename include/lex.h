@@ -31,6 +31,8 @@
 #define TOKEN_STAR              23
 #define TOKEN_SLASH             24
 
+const char* lex_get_token_name(int id);
+
 struct token {
 	int type;
 //	size_t line;
