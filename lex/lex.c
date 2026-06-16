@@ -78,15 +78,6 @@ void lex_skipwhitespace(struct lex *l)
 	l->pos += len; // maybe add safety? (edit lex_advance to add offset)
 }
 
-char lex_advance(struct lex *l)
-{
-	assert(l != NULL);
-	if (!l->buffer[l->pos+1])
-		return l->buffer[l->pos];
-	l->pos++;
-	return l->buffer[l->pos];
-}
-
 char lex_seek(struct lex *l, size_t o)
 {
 	assert(l != NULL);	
@@ -113,12 +104,12 @@ struct token lex_number(struct lex *l)
 		
 		if (next_tkn == 'x') {
 			state = 1;
-			l->pos += 2;	
+			lex_advance(l, 2);
 		}
 
 		if (next_tkn == 'b') {
 			state = 2;
-			l->pos += 2;
+			lex_advance(l, 2);
 		}
 	}
 
@@ -177,8 +168,8 @@ struct token lex_keyword(struct lex *l) //APPROPRIATE INC
 			break;
 		}
 	}
-	
-	l->pos += len;
+
+       	lex_advance(l, len); 
 
 	int tt = TOKEN_IDENTIFIER;
 
@@ -213,10 +204,11 @@ struct token lex_next(struct lex *l)
 	if (lex_is_digit(lex_seek(l, 0))) {
 		return lex_number(l);
 	}
-	
+
+	// so much repetition, ugly, but can stay
 	switch (lex_seek(l, 0)) {
 	case '\n':
-		l->pos++;
+		lex_advance(l, 1);
 		l->line++;
 		return TOKEN(TOKEN_NEWLINE, "\\n");
 	case '#':
@@ -224,34 +216,34 @@ struct token lex_next(struct lex *l)
 	case '$':
 		return lex_link_unit(l);
 	case ';':
-		l->pos++;
+		lex_advance(l,1);
 		return TOKEN(TOKEN_SEMICOLON, ";");
 	case '{':
-		l->pos++;
+		lex_advance(l, 1);
 		return TOKEN(TOKEN_BRACES_OPEN, "{");
 	case '}':
-		l->pos++;
+		lex_advance(l, 1);
 		return TOKEN(TOKEN_BRACES_CLOSE, "}");
 	case '(':
-		l->pos++;
+		lex_advance(l, 1);
 		return TOKEN(TOKEN_PARAN_OPEN, "(");
 	case ')':
-		l->pos++;
+		lex_advance(l, 1);
 		return TOKEN(TOKEN_PARAN_CLOSE, ")");
 	case '=':
-		l->pos++;
+		lex_advance(l, 1);
 		return TOKEN(TOKEN_EQUALSIGN, "=");
 	case '*':
-		l->pos++;
+		lex_advance(l, 1);
 		return TOKEN(TOKEN_STAR, "*");
 	case '+':
-		l->pos++;
+		lex_advance(l, 1);
 		return TOKEN(TOKEN_PLUS, "+");
 	case '-':
-		l->pos++;
+		lex_advance(l, 1);
 		return TOKEN(TOKEN_MINUS, "-");
 	case '/':
-		l->pos++;
+		lex_advance(l, 1);
 		return TOKEN(TOKEN_SLASH, "/");
 	default:
 		char curr = lex_seek(l, 0);

@@ -48,7 +48,7 @@ struct lex {
 	size_t line;
 };
 
-char lex_advance(struct lex *l);
+char lex_advance(struct lex *l, size_t o);
 char lex_seek(struct lex *l, size_t o);
 
 struct token lex_number(struct lex *l);
