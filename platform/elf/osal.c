@@ -51,6 +51,11 @@ void print(const char *fmt, ...)
 	va_end(args);
 }
 
+void printv(const char *fmt, va_list l)
+{
+	vprintf(fmt, l);
+}
+
 void exitc(int c)
 {
 	exit(c);

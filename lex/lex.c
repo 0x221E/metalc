@@ -86,9 +86,74 @@ char lex_seek(struct lex *l, size_t o)
 	return 0;
 }
 
+char lex_advance(struct lex *l, size_t o)
+{
+	assert(l != NULL);
+
+	if (l->buffer[l->pos + o] == 0 ||
+	    l->pos + o >= l->size) {
+		l->pos = l->size;
+		return 0;
+	}
+	
+	l->pos += o;
+	return lex_seek(l, o);
+}
+
 struct token lex_token_create(int tt, char* lexeme, size_t s)
 {
 	return (struct token) {.type = tt, .length = s, .lexeme = lexeme};
+}
+
+void lex_error(struct lex *l, int err_code, const char *s, ...)
+{
+	assert(l != NULL);
+	va_list args;
+	va_start(args, s);
+	print("%s:%d: error: ", l->filepath, l->line);
+	printv(s, args);
+	print("\n");
+
+	int start = 0;
+	int end = 0;
+
+	int pos = 0;
+	int curr_line = 0;
+
+	// inefficient, but safe for now
+	
+	while (l->buffer[pos]) {
+		if (l->buffer[pos] == '\n') {
+			curr_line+=1;
+		}
+		pos++;
+
+		if (curr_line == l->line - 1) {
+			start = pos;
+
+			while (l->buffer[pos]) {
+				if (l->buffer[pos] == '\n')
+					break;
+				else
+					pos++;
+			}
+			end = pos;
+		}
+	}
+       
+	int size = (int)(end - start);
+
+	print("%d |    %.*s\n", l->line, size, &l->buffer[start]);
+
+	print("  |");
+	size_t cursor_loc = (l->pos - start) + 4;
+	for (size_t i = 0; i < cursor_loc; i++) {
+		print(" ");
+	}
+	print("^\n");
+	
+	va_end(args);
+	exitc(1);
 }
 
 struct token lex_number(struct lex *l)
@@ -121,8 +186,15 @@ struct token lex_number(struct lex *l)
 	switch (state) {
 	case 0:
 		tt = TOKEN_NUMBER;
-		while (lex_seek(l, len) && lex_is_digit(lex_seek(l, len)))
-			len++;
+		while (lex_seek(l, len)) {
+			if (lex_is_digit(lex_seek(l, len))) {
+				len++;
+			} else if (lex_is_char(lex_seek(l, len))) {
+				lex_error(l, LEX_NUMBER_ERR, "A number literal must not contain any non-digit characters.");
+			} else {
+				break;
+			}
+		}
 		break;
 	case 1:
 		tt = TOKEN_HEX;
@@ -131,15 +203,27 @@ struct token lex_number(struct lex *l)
 		break;
 	case 2:
 		tt = TOKEN_BINARY;
-		while (lex_seek(l, len) && (lex_seek(l, len) == '0' || lex_seek(l, len) == '1')) {
-			len++;
+		while (lex_seek(l, len)) {
+			char curr = lex_seek(l, len);
+
+			if ((curr == '0') ||
+			    (curr == '1')) {
+				len++;
+				continue;
+			} else if (lex_is_digit(curr)) {
+				lex_error(l, LEX_BINARY_ERR, "A binary number should not have digits other than 0 or 1.");
+			} else if (lex_is_char(curr)) {
+				lex_error(l, LEX_BINARY_ERR,"A binary number should not contain alphanumeric characters.");
+			}
+
+			break;
 		}
 		break;
 	default:
 		return (struct token) {.type = TOKEN_INVALID, .lexeme = "number"};
 	}	
 
-	l->pos += len;
+	lex_advance(l, len);
 
 	return lex_token_create(tt, &l->buffer[start], len); 
 }

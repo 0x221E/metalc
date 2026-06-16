@@ -33,10 +33,15 @@
 
 const char* lex_get_token_name(int id);
 
+#define LEX_NUMBER_ERR          0
+#define LEX_HEX_ERR             1
+#define LEX_BINARY_ERR          2
+
+
 struct token {
 	int type;
 //	size_t line;
-//	size_t pos;
+//	size_t linepos;
 	size_t length;
 	char *lexeme;
 };
@@ -45,11 +50,15 @@ struct lex {
 	size_t pos;
 	size_t size;
 	char* buffer;
+	const char* filepath;	
 	size_t line;
+	size_t linepos;
 };
 
 char lex_advance(struct lex *l, size_t o);
 char lex_seek(struct lex *l, size_t o);
+
+void lex_error(struct lex *l, int err_code, const char *s, ...);
 
 struct token lex_number(struct lex *l);
 struct token lex_directive(struct lex *l);

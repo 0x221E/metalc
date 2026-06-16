@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdarg.h>
 
 void* mem_alloc(size_t s);
 void mem_free(void *p);
@@ -19,6 +20,7 @@ struct file {
 struct file open_file(const char *path, int flags);
 
 void print(const char *fmt, ...);
+void printv(const char *fmt, va_list l);
 void exitc(int c);
 
 #endif
