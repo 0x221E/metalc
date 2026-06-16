@@ -92,7 +92,7 @@ char lex_seek(struct lex *l, size_t o)
 	assert(l != NULL);	
 	if (l->buffer[l->pos + o])
 		return l->buffer[l->pos + o];
-	return '\0';
+	return 0;
 }
 
 struct token lex_token_create(int tt, char* lexeme, size_t s)
@@ -106,14 +106,17 @@ struct token lex_number(struct lex *l)
 
 	int state = 0;
 
-	if (lex_seek(l, 0) == '0') {
+	char current_tkn = lex_seek(l, 0);		
+	char next_tkn = lex_seek(l, 1);
+
+	if (current_tkn == '0') {
 		
-		if (lex_seek(l, 1) && lex_seek(l, 1) == 'x') {
+		if (next_tkn == 'x') {
 			state = 1;
 			l->pos += 2;	
 		}
 
-		if (lex_seek(l, 1) && lex_seek(l, 1) == 'b') {
+		if (next_tkn == 'b') {
 			state = 2;
 			l->pos += 2;
 		}
