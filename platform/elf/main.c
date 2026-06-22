@@ -25,8 +25,9 @@ int main(int argc, char **argv)
 	}
 
 	struct lex lex = {0};
-	lex.line = 0;
+	lex.line = 1;
 	lex.buffer = fl.buffer;
+	lex.filepath = fl.path;
 	lex.size = fl.size;
 	lex.pos = 0;
 	

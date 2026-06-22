@@ -1,5 +1,5 @@
 TODO
-- Abstract lexer error messages.
+- Add recursion depth limit
 - Cleanup lexer, reduce LoCs.
 - Tokenizer should not malloc() for each token, use arena alloc and reserve instead.
-- Add the same error-logic to hex and binary values in lex_number() in lex/lex.c
+- Build a debug backend for the compiler to print the entirety of the state of the AST.
