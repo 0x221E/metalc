@@ -17,6 +17,12 @@ int vector_init(struct vector *v)
 	return 0;
 }
 
+int vector_free(struct vector *v)
+{
+	assert(v != NULL);
+	mem_free((void*)v->buffer);
+}
+
 int vector_reserve(struct vector *v, size_t nc)
 {
 	assert(v != NULL);

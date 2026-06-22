@@ -6,6 +6,7 @@ SRC_DIRECTORIES=(
 	"./arch/"
 	"./lex/"
 	"./parser/"
+	"./passes/"
 	"./lib/"
 	"./platform/${PLATFORM}/"
 )

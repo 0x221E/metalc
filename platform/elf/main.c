@@ -1,7 +1,10 @@
 #include <stdio.h>
 
 #include <lex.h>
+#include <parser.h>
+#include <lib/arena.h>
 #include <lib/vector.h>
+#include <passdbg.h>
 
 #include <platform/osal.h>
 
@@ -18,9 +21,10 @@ int main(int argc, char **argv)
 
 	struct file fl = open_file(argv[1], FILE_READ);
 
-	struct vector token_storage = {0};
-	if (vector_init(&token_storage)) {
-		printf("error: vector_init()");
+	struct region tokens;
+	
+	if (region_init(&tokens) == -1) {
+		printf("Region init error!");
 		exit(1);
 	}
 
@@ -36,38 +40,61 @@ int main(int argc, char **argv)
 	size_t size = 0;
 
 	do {
-		tkn = mem_alloc(sizeof(struct token)); // Change mem alloc with arena alloc
+		struct token curr = lex_next(&lex);
+
+		if (curr.type == TOKEN_NEWLINE)
+			continue;
+
+		if (curr.type == TOKEN_EOP)
+			break;		
+		
+		tkn = region_alloc(&tokens, sizeof(struct token));
 
 		if (tkn == NULL) {
 			printf("error: token alloc");
 			exit(1);
 		}
+		
+		*tkn = curr;
+		
+		/* printf("Tokenized to mem %p! Current region size: %d, type: %d\n", */
+		/*        tkn, */
+		/*        (int)tokens.size, */
+		/*        ((struct token*)tokens.start)[size].type); */
 
-		*tkn = lex_next(&lex);
-
-		//		printf("Tokenized: %.*s, with length: %d.\n", (int)tkn->length, tkn->lexeme, (int)tkn->type);
-
-		if (vector_emplace_back(&token_storage, tkn) == -1) {
-			printf("error: vector_emplace_back()");
-			exit(1);
-		}
+		size++;
 
 	} while (tkn != NULL &&
 		tkn->type != TOKEN_INVALID && 
 		tkn->type != TOKEN_EOP);
 
-	for (int i = 0; i < token_storage.size; i++) {
-		if (token_storage.buffer[i] == NULL)
-			break;
-
-		printf("Tokenized '%.*s' with type: %s\n", //, on line: %d at position: %d\n", 
-		       (int)((struct token*) token_storage.buffer[i])->length,
-		       ((struct token*)token_storage.buffer[i])->lexeme,
-		       lex_get_token_name((int)((struct token*)token_storage.buffer[i])->type)
-//				((struct token*)token_storage.buffer[i])->line,
-//				((struct token*)token_storage.buffer[i])->pos
-				);
+	for (int i = 0; i < (tokens.size) / sizeof(struct token); i++) {
+		struct token* curr = ((struct token*)tokens.start) + i;
+		printf("Tokenized '%.*s' with type: %s\n",		       
+		       (int)curr->length,
+		       curr->lexeme,
+		       lex_get_token_name((int)curr->type));
 	}
 
-	return 0;
+	struct region parsed;
+	region_init(&parsed);
+
+	struct vector ast_tree;
+	vector_init(&ast_tree);
+	
+	struct parser p;
+	p.tokens = &tokens;
+	p.buffer = &parsed;
+	p.result = &ast_tree;
+	p.size = tokens.size / sizeof(struct token);
+	p.pos = 0;
+	p.error = 0;
+	
+	parser_parse(&p);
+	if (p.error)
+		return 1;
+
+	passdbg_walk(ast_tree.buffer[0]);
+
+	vector_free(&ast_tree);
 }

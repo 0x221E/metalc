@@ -16,6 +16,6 @@ struct vector {
 int vector_init(struct vector *v);
 int vector_resize(struct vector *v, size_t nc);
 int vector_emplace_back(struct vector *v, void *p);
-int vector_deinit(struct vector *v);
+int vector_free(struct vector *v);
 
 #endif

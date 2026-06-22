@@ -30,6 +30,7 @@
 #define TOKEN_MINUS             22
 #define TOKEN_STAR              23
 #define TOKEN_SLASH             24
+#define TOKEN_BANG              25
 
 const char* lex_get_token_name(int id);
 
@@ -40,8 +41,7 @@ const char* lex_get_token_name(int id);
 
 struct token {
 	int type;
-//	size_t line;
-//	size_t linepos;
+	size_t line;
 	size_t length;
 	char *lexeme;
 };

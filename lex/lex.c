@@ -4,7 +4,6 @@
 #include <string.h>
 
 #include <platform/osal.h>
-
 #include <stdio.h>
 
 static struct token keywords[] = {
@@ -46,6 +45,7 @@ const char *lex_get_token_name(int id)
 	__GET_TKN_NAME(TOKEN_MINUS);
 	__GET_TKN_NAME(TOKEN_STAR);
 	__GET_TKN_NAME(TOKEN_SLASH);
+	__GET_TKN_NAME(TOKEN_BANG);
 	default:
 		print("lex_get_token_name: token not found: %d!", id);
 		exitc(1);
@@ -266,13 +266,12 @@ struct token lex_keyword(struct lex *l) //APPROPRIATE INC
 		}
 
 		if (strncmp(&l->buffer[start], keywords[i].lexeme, keywords[i].length) == 0) {
-			tt = keywords[i].type;	
+			tt = keywords[i].type;
 			break;
 		}
 	}
 
 	return (struct token) {.type = tt, .length=len, .lexeme = &l->buffer[start]};
-	 
 }
 
 struct token lex_next(struct lex *l)
@@ -329,11 +328,14 @@ struct token lex_next(struct lex *l)
 	case '/':
 		lex_advance(l, 1);
 		return TOKEN(TOKEN_SLASH, "/");
+	case '!':
+		lex_advance(l, 1);
+		return TOKEN(TOKEN_BANG, "!");
 	default:
 		char curr = lex_seek(l, 0);
-		if (lex_is_char(curr) || (curr == '_')) {
+		if (lex_is_char(curr) || (curr == '_'))
 			return lex_keyword(l);
-		}
+
 		return TOKEN(TOKEN_INVALID, "INVALID");
 	}
 }
